@@ -159,7 +159,7 @@ angular.module('conFusion.controllers', [])
     };
 }])
 
-.controller('DishDetailController', ['$scope', '$stateParams', 'menuFactory', 'baseURL', function($scope, $stateParams, menuFactory, baseURL) {
+.controller('DishDetailController', ['$scope', '$stateParams', 'menuFactory', 'favoriteFactory', 'baseURL', '$ionicPopover','$ionicModal', function($scope, $stateParams, menuFactory, favoriteFactory, baseURL, $ionicPopover,$ionicModal) {
 
     $scope.baseURL = baseURL;
     
@@ -178,11 +178,65 @@ angular.module('conFusion.controllers', [])
                     }
     );
 
+    
+    // ----- popover  ----------------------------------------    
+    $ionicPopover.fromTemplateUrl('templates/dish-detail-popover.html', {
+        scope: $scope
+    }).then(function(popover) {
+        $scope.popover = popover;
+    });
+  
+    $scope.openPopover = function($event) {
+        $scope.popover.show($event);
+    };
+    $scope.closePopover = function() {
+        $scope.popover.hide();
+    }; 
+    // -------------------------------------------------------
+    
+    // ----- popover button actions --------------------------
+    $scope.addToFavorites = function (index) {
+        console.log("addToFavorites(), index is " + index);
+        favoriteFactory.addToFavorites(index);        
+        
+        $scope.popover.hide();
+    }  
+    
+    $scope.addComment = function (index) {
+        console.log("addComment(), index is " + index);
+        
+        $scope.showDishComment();        
+        $scope.popover.hide();
+    }    
+    // -------------------------------------------------------
 
+    
+    // ----- $ionicModal dish-comment --------------------------
+    
+    // Create the reserve modal that we will use later
+    $ionicModal.fromTemplateUrl('templates/dish-comment.html', {
+        scope: $scope
+    }).then(function(modal) {
+        $scope.dishCommentForm = modal;
+    });
+
+    // Triggered in the dishCommentForm modal to close it
+    $scope.closeDishComment = function() {
+        $scope.dishCommentForm.hide();
+    };
+
+    // Open the dishCommentForm modal
+    $scope.showDishComment = function() {
+        $scope.dishCommentForm.show();
+    };
+    // -------------------------------------------------------
+        
 }])
 
 .controller('DishCommentController', ['$scope', 'menuFactory', function($scope,menuFactory) {
 
+    console.log('DishCommentController...');
+    
     $scope.mycomment = {rating:5, comment:"", author:"", date:""};
 
     $scope.submitComment = function () {
@@ -191,11 +245,15 @@ angular.module('conFusion.controllers', [])
         console.log($scope.mycomment);
 
         $scope.dish.comments.push($scope.mycomment);
-menuFactory.getDishes().update({id:$scope.dish.id},$scope.dish);
+        menuFactory.getDishes().update({id:$scope.dish.id},$scope.dish);
 
         $scope.commentForm.$setPristine();
 
         $scope.mycomment = {rating:5, comment:"", author:"", date:""};
+        
+        /* DishCommentController scope is into DishDetailController scope
+           then it's possible invoke DishCommentController.closeDishComment. */
+        $scope.closeDishComment();
     }
 }])
 
