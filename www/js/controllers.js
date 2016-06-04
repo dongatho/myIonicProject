@@ -75,7 +75,7 @@ angular.module('conFusion.controllers', [])
     
 })
 
-.controller('MenuController', ['$scope', 'menuFactory', 'favoriteFactory', 'baseURL', '$ionicListDelegate', function ($scope, menuFactory, favoriteFactory, baseURL, $ionicListDelegate) {
+.controller('MenuController', ['$scope', 'dishes', 'menuFactory', 'favoriteFactory', 'baseURL', '$ionicListDelegate', function ($scope, dishes, menuFactory, favoriteFactory, baseURL, $ionicListDelegate) {
 
     $scope.baseURL = baseURL;
 
@@ -85,15 +85,7 @@ angular.module('conFusion.controllers', [])
     $scope.showMenu = false;
     $scope.message = "Loading ...";
 
-    $scope.dishes = menuFactory.query(
-        function(response) {
-            $scope.dishes = response;
-            $scope.showMenu = true;
-        },
-        function(response) {
-            $scope.message = "Error: "+response.status + " " + response.statusText;
-        });
-
+    $scope.dishes = dishes;
 
     $scope.select = function(setTab) {
         $scope.tab = setTab;
@@ -188,8 +180,7 @@ angular.module('conFusion.controllers', [])
     // ----- popover button actions --------------------------
     $scope.addToFavorites = function (index) {
         console.log("addToFavorites(), index is " + index);
-        favoriteFactory.addToFavorites(index);        
-        
+        favoriteFactory.addToFavorites(index);          
         $scope.popover.hide();
     }  
     
@@ -249,39 +240,21 @@ angular.module('conFusion.controllers', [])
 }])
 
 // implement the IndexController and About Controller here
-.controller('IndexController', ['$scope', 'menuFactory', 'promotionFactory', 'corporateFactory', 'baseURL', function ($scope, menuFactory, promotionFactory, corporateFactory, baseURL) {
+.controller('IndexController', ['$scope', 'dish', 'promotion', 'leader', 'menuFactory', 'promotionFactory', 'corporateFactory', 'baseURL', function ($scope, dish, promotion, leader, menuFactory, promotionFactory, corporateFactory, baseURL) {
 
     $scope.baseURL = baseURL;
-    $scope.leader = corporateFactory.get({
-        id: 3
-    });
+    $scope.leader = leader;
 
-    $scope.showDish = false;
-    $scope.message = "Loading ...";
+    $scope.dish = dish;
 
-    $scope.dish = menuFactory.get({
-            id: 0
-        })
-        .$promise.then(
-            function (response) {
-                $scope.dish = response;
-                $scope.showDish = true;
-            },
-            function (response) {
-                $scope.message = "Error: " + response.status + " " + response.statusText;
-            }
-        );
-
-    $scope.promotion = promotionFactory.get({
-        id: 0
-    });
+    $scope.promotion = promotion;
 
 }])
 
-.controller('AboutController', ['$scope', 'corporateFactory', 'baseURL', function($scope, corporateFactory, baseURL) {
+.controller('AboutController', ['$scope', 'leaders', 'corporateFactory', 'baseURL', function($scope, leaders, corporateFactory, baseURL) {
 
             $scope.baseURL = baseURL;
-            $scope.leaders = corporateFactory.query();
+            $scope.leaders = leaders;
             console.log($scope.leaders);
 
             }])
@@ -291,8 +264,9 @@ angular.module('conFusion.controllers', [])
     $scope.baseURL = baseURL;
     $scope.shouldShowDelete = false;
 
-    $scope.favorites = favorites;
-
+    $scope.favorites = favorites;    
+    console.log("$scope.favorites = " + favorites)
+    
     $scope.dishes = dishes;   
     
     console.log($scope.dishes, $scope.favorites);
@@ -312,7 +286,7 @@ angular.module('conFusion.controllers', [])
         confirmPopup.then(function (res) {
             if (res) {
                 console.log('Ok to delete');
-                favoriteFactory.deleteFromFavorites(index);
+                favoriteFactory.deleteFromFavorites(index);                
             } else {
                 console.log('Canceled delete');
             }
